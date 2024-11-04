@@ -21,23 +21,23 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends software-properties-common curl apache2-utils \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
-        supervisor nginx sudo net-tools zenity xz-utils \
-        dbus-x11 x11-utils alsa-utils \
-        mesa-utils libgl1-mesa-dri \
+    supervisor nginx sudo net-tools zenity xz-utils \
+    dbus-x11 x11-utils alsa-utils \
+    mesa-utils libgl1-mesa-dri \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 # install debs error if combine together
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        xvfb x11vnc \
-        vim-tiny firefox fonts-ubuntu \
+    xvfb x11vnc \
+    vim-tiny firefox fonts-ubuntu \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        gpgconf gnupg gpg-agent \
+    gpgconf gnupg gpg-agent \
     && curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
     && (dpkg -i ./google-chrome-stable_current_amd64.deb || apt-get install -fy) \
     && curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add \
@@ -49,11 +49,11 @@ RUN apt-get update \
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        lightdm \
+    lightdm \
     && apt-get install -y \
-        lxde \
+    lxde \
     && apt-get install -y --no-install-recommends \
-        gtk2-engines-murrine gnome-themes-standard gtk2-engines-pixbuf gtk2-engines-murrine arc-theme \
+    gtk2-engines-murrine gnome-themes-standard gtk2-engines-pixbuf gtk2-engines-murrine arc-theme \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
@@ -70,7 +70,7 @@ RUN apt-get update \
 # ffmpeg
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        ffmpeg \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir /usr/local/ffmpeg \
     && ln -s /usr/bin/ffmpeg /usr/local/ffmpeg/ffmpeg
@@ -80,7 +80,7 @@ COPY rootfs/usr/local/lib/web/backend/requirements.txt /tmp/
 RUN apt-get update \
     && dpkg-query -W -f='${Package}\n' > /tmp/a.txt \
     && apt-get install -y python3-pip python3-dev build-essential \
-	&& python3 -m pip install setuptools wheel && python3 -m pip install -r /tmp/requirements.txt \
+    && python3 -m pip install setuptools wheel && python3 -m pip install -r /tmp/requirements.txt \
     && ln -s /usr/bin/python3 /usr/local/bin/python \
     && dpkg-query -W -f='${Package}\n' > /tmp/b.txt \
     && apt-get remove -y `diff --changed-group-format='%>' --unchanged-group-format='' /tmp/a.txt /tmp/b.txt | xargs` \
@@ -96,6 +96,24 @@ RUN apt-get update \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
+
+# qgis: https://www.qgis.org/resources/installation-guide/#debianubuntu
+RUN apt-get install gnupg software-properties-common
+
+RUN sudo mkdir -m755 -p /etc/apt/keyrings  # not needed since apt version 2.4.0 like Debian 12 and Ubuntu 22 or newer
+RUN sudo wget -O /etc/apt/keyrings/qgis-archive-keyring.gpg https://download.qgis.org/downloads/qgis-archive-keyring.gpg
+
+RUN cat <<EOF > /etc/apt/sources.list.d/qgis.sources
+Types: deb deb-src
+URIs: https://qgis.org/debian
+Suites: jammy
+Architectures: amd64
+Components: main
+Signed-By: /etc/apt/keyrings/qgis-archive-keyring.gpg
+EOF
+
+RUN sudo apt-get update
+RUN sudo apt-get install -y qgis qgis-plugin-grass
 
 ################################################################################
 # builder
@@ -138,7 +156,7 @@ LABEL maintainer="fcwu.tw@gmail.com"
 COPY --from=builder /src/web/dist/ /usr/local/lib/web/frontend/
 COPY rootfs /
 RUN ln -sf /usr/local/lib/web/frontend/static/websockify /usr/local/lib/web/frontend/static/novnc/utils/websockify && \
-	chmod +x /usr/local/lib/web/frontend/static/websockify/run
+    chmod +x /usr/local/lib/web/frontend/static/websockify/run
 
 EXPOSE 80
 WORKDIR /root
